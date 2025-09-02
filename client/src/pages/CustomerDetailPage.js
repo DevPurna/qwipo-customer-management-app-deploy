@@ -21,15 +21,16 @@ function CustomerDetailPage() {
   const fetchData = async () => {
     setLoading(true);
     setError("");
+    
     try {
       const customerRes = await fetch(
-        `http://localhost:5000/api/customers/${id}`
+        `${process.env.REACT_APP_API_URL}/api/customers/${id}`
       );
       if (!customerRes.ok) throw new Error("Failed to load customer");
       const customerData = await customerRes.json();
 
       const addressesRes = await fetch(
-        `http://localhost:5000/api/customers/${id}/addresses`
+        `${process.env.REACT_APP_API_URL}/api/customers/${id}/addresses`
       );
       if (!addressesRes.ok) throw new Error("Failed to load addresses");
       const addressesData = await addressesRes.json();
@@ -56,7 +57,7 @@ function CustomerDetailPage() {
     try {
       // Update customer info
       const resCustomer = await fetch(
-        `http://localhost:5000/api/customers/${id}`,
+        `${process.env.REACT_APP_API_URL}/api/customers/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -71,7 +72,7 @@ function CustomerDetailPage() {
       if (primaryAddress) {
         // Update primary address
         const resAddress = await fetch(
-          `http://localhost:5000/api/addresses/${primaryAddress.id}`,
+          `${process.env.REACT_APP_API_URL}/api/addresses/${primaryAddress.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -85,7 +86,7 @@ function CustomerDetailPage() {
       } else {
         // No primary address yet, create one
         const resAddress = await fetch(
-          `http://localhost:5000/api/customers/${id}/addresses`,
+          `${process.env.REACT_APP_API_URL}/api/customers/${id}/addresses`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -109,7 +110,7 @@ function CustomerDetailPage() {
     setError("");
     try {
       const res = await fetch(
-        `http://localhost:5000/api/addresses/${addressId}`,
+        `${process.env.REACT_APP_API_URL}/api/addresses/${addressId}`,
         {
           method: "DELETE",
         }
@@ -131,7 +132,7 @@ function CustomerDetailPage() {
       if (addressId) {
         // Update existing address
         const res = await fetch(
-          `http://localhost:5000/api/addresses/${addressId}`,
+          `${process.env.REACT_APP_API_URL}/api/addresses/${addressId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -145,7 +146,7 @@ function CustomerDetailPage() {
       } else {
         // Add new address
         const res = await fetch(
-          `http://localhost:5000/api/customers/${id}/addresses`,
+          `${process.env.REACT_APP_API_URL}/api/customers/${id}/addresses`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

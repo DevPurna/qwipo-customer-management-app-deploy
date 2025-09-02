@@ -46,11 +46,11 @@ function AddressForm({ customerId, onSuccess, initialData = null, onCancel }) {
 
     setLoading(true);
     setError("");
-
+    
     try {
       const url = initialData
-        ? `http://localhost:5000/api/addresses/${initialData.id}`
-        : `http://localhost:5000/api/customers/${customerId}/addresses`;
+        ? `${process.env.REACT_APP_API_URL}/api/addresses/${initialData.id}`
+        : `${process.env.REACT_APP_API_URL}/api/customers/${customerId}/addresses`;
 
       const method = initialData ? "PUT" : "POST";
 

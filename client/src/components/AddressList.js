@@ -18,7 +18,7 @@ function AddressList({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/addresses/${id}`,
+        `${process.env.REACT_APP_API_URL}/api/addresses/${id}`,
         {
           method: "DELETE",
         }

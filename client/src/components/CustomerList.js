@@ -25,7 +25,7 @@ function CustomerList({
     });
 
     try {
-      const res = await fetch(`http://localhost:5000/api/customers?${params}`);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/customers?${params}`);
       const data = await res.json();
       setCustomers(data.data);
       setPagination(data.pagination);
@@ -41,8 +41,9 @@ function CustomerList({
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this customer?"))
       return;
+    
     try {
-      await fetch(`http://localhost:5000/api/customers/${id}`, {
+      await fetch(`${process.env.REACT_APP_API_URL}/api/customers/${id}`, {
         method: "DELETE",
       });
       fetchCustomers();

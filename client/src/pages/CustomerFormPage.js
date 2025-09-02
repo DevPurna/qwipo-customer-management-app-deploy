@@ -20,13 +20,14 @@ function CustomerFormPage() {
       setLoading(true);
       setError("");
       Promise.all([
+        
         fetch(
-          `http://localhost:5000/api/customers/${id}/with-address-count`
+          `${process.env.REACT_APP_API_URL}/api/customers/${id}/with-address-count`
         ).then((res) => {
           if (!res.ok) throw new Error("Failed to load customer");
           return res.json();
         }),
-        fetch(`http://localhost:5000/api/customers/${id}/addresses`).then(
+        fetch(`${process.env.REACT_APP_API_URL}/api/customers/${id}/addresses`).then(
           (res) => {
             if (!res.ok) throw new Error("Failed to load addresses");
             return res.json();
@@ -47,7 +48,7 @@ function CustomerFormPage() {
 
   const handleCustomerSubmit = async (customerData, addressData) => {
     try {
-      const res = await fetch("http://localhost:5000/api/customers", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/customers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...customerData, ...addressData }),
@@ -77,7 +78,7 @@ function CustomerFormPage() {
   };
 
   const handleAddressUpdated = () => {
-    fetch(`http://localhost:5000/api/customers/${id}/addresses`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/customers/${id}/addresses`)
       .then((res) => res.json())
       .then((data) => {
         setAddresses(data.data);
