@@ -46,7 +46,7 @@ function AddressForm({ customerId, onSuccess, initialData = null, onCancel }) {
 
     setLoading(true);
     setError("");
-    
+
     try {
       const url = initialData
         ? `${process.env.REACT_APP_API_URL}/api/addresses/${initialData.id}`
@@ -73,7 +73,7 @@ function AddressForm({ customerId, onSuccess, initialData = null, onCancel }) {
       // Get newly created/updated address from API response
       const data = await response.json();
       const returnedAddress = data.data; // <-- must match your API response
-      onSuccess && onSuccess();
+      onSuccess && onSuccess(returnedAddress); 
 
       if (!initialData) {
         // Clear form after adding new address
