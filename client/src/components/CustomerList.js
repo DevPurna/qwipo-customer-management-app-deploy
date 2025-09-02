@@ -1,4 +1,3 @@
-// client/src/components/CustomerList.js
 import React, { useEffect, useState } from "react";
 
 function CustomerList({

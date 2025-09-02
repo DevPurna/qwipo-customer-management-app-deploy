@@ -13,7 +13,6 @@ function CustomerListPage() {
   const navigate = useNavigate();
 
   // Forcing CustomerList to reload on filters/page changes by passing props
-
   const handleEdit = (customer) => {
     navigate(`/customers/${customer.id}/edit`);
   };

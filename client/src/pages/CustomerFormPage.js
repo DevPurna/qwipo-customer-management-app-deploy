@@ -45,11 +45,33 @@ function CustomerFormPage() {
     }
   }, [id]);
 
+  const handleCustomerSubmit = async (customerData, addressData) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...customerData, ...addressData }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to create customer");
+
+      alert("Customer and address created successfully!");
+
+      // Redirect to customer detail page
+      navigate(`/customers/${data.data.id}`, { replace: true });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const handleCustomerUpdateSuccess = () => {
     alert("Customer updated successfully");
   };
 
   const handleAddressAdded = (newAddress) => {
+    if (!newAddress) return; // safety check
     setAddresses((prev) => [...prev, newAddress]);
     setAddingNewAddress(false);
   };
@@ -57,7 +79,10 @@ function CustomerFormPage() {
   const handleAddressUpdated = () => {
     fetch(`http://localhost:5000/api/customers/${id}/addresses`)
       .then((res) => res.json())
-      .then((data) => setAddresses(data.data))
+      .then((data) => {
+        setAddresses(data.data);
+        alert("Address updated successfully!");
+      })
       .catch(() => {});
     setEditingAddress(null);
   };
@@ -80,9 +105,8 @@ function CustomerFormPage() {
         <div className="md:w-1/2">
           <CustomerForm
             initialData={customerData}
-            onSubmitSuccess={handleCustomerUpdateSuccess}
+            onSubmit={handleCustomerSubmit} // CALLS API
             onCancel={() => navigate("/")}
-            showAddressFields={false} // Hide address fields here
           />
         </div>
 
@@ -119,7 +143,6 @@ function CustomerFormPage() {
 
           {addingNewAddress && (
             <div className="mt-6 p-4 border rounded bg-gray-50">
-              <h3 className="text-xl font-semibold mb-2">Add New Address</h3>
               <AddressForm
                 customerId={id}
                 onSuccess={handleAddressAdded}

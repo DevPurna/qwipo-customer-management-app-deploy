@@ -232,13 +232,20 @@ app.get("/api/customers/:id/with-address-count", (req, res) => {
     GROUP BY customers.id
   `;
   db.get(sql, [customerId], (err, row) => {
-    if (err) return res.status(400).json({ error: err.message });
-    if (!row) return res.status(404).json({ error: "Customer not found" });
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (!row) {
+      return res.status(404).json({ error: "Customer not found" });
+    }
+    // Convert address_count from string to number if needed
+    const addressCount = Number(row.address_count) || 0;
+
     res.json({
       message: "success",
       data: {
         ...row,
-        only_one_address: row.address_count === 1,
+        only_one_address: addressCount === 1,
       },
     });
   });

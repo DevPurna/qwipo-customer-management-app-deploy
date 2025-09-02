@@ -70,7 +70,11 @@ function AddressForm({ customerId, onSuccess, initialData = null, onCancel }) {
         throw new Error(data.error || "Failed to submit address.");
       }
 
+      // Get newly created/updated address from API response
+      const data = await response.json();
+      const returnedAddress = data.data; // <-- must match your API response
       onSuccess && onSuccess();
+
       if (!initialData) {
         // Clear form after adding new address
         setAddressDetails("");

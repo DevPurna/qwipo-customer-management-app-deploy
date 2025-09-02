@@ -1,76 +1,59 @@
 import React, { useState, useEffect } from "react";
 
-function CustomerForm({
-  initialData = {},
-  onSubmitSuccess,
-  onCancel,
-  showAddressFields = true,
-}) {
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    phone_number: "",
-    address_details: "",
-    city: "",
-    state: "",
-    pin_code: "",
-  });
-  const [errors, setErrors] = useState({});
+function CustomerForm({ initialData, initialAddress, onSubmit }) {
+  const [firstName, setFirstName] = useState(initialData?.first_name || "");
+  const [lastName, setLastName] = useState(initialData?.last_name || "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    initialData?.phone_number || ""
+  );
+
+  const [addressDetails, setAddressDetails] = useState(
+    initialAddress?.address_details || ""
+  );
+  const [city, setCity] = useState(initialAddress?.city || "");
+  const [state, setState] = useState(initialAddress?.state || "");
+  const [pinCode, setPinCode] = useState(initialAddress?.pin_code || "");
+
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-  const [submitSuccess, setSubmitSuccess] = useState("");
 
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      setFormData({
-        first_name: initialData.first_name || "",
-        last_name: initialData.last_name || "",
-        phone_number: initialData.phone_number || "",
-        address_details:
-          initialData.address_details ||
-          initialData.address?.address_details ||
-          "",
-        city: initialData.city || initialData.address?.city || "",
-        state: initialData.state || initialData.address?.state || "",
-        pin_code: initialData.pin_code || initialData.address?.pin_code || "",
-      });
-    }
-  }, [initialData]);
+    setFirstName(initialData?.first_name || "");
+    setLastName(initialData?.last_name || "");
+    setPhoneNumber(initialData?.phone_number || "");
+
+    setAddressDetails(initialAddress?.address_details || "");
+    setCity(initialAddress?.city || "");
+    setState(initialAddress?.state || "");
+    setPinCode(initialAddress?.pin_code || "");
+
+    setError("");
+  }, [initialData, initialAddress]);
 
   const validate = () => {
-    const newErrors = {};
-    if (!formData.first_name.trim())
-      newErrors.first_name = "First name is required.";
-    if (!formData.last_name.trim())
-      newErrors.last_name = "Last name is required.";
-    if (!formData.phone_number.trim()) {
-      newErrors.phone_number = "Phone number is required.";
-    } else if (!/^\d{10}$/.test(formData.phone_number.trim())) {
-      newErrors.phone_number = "Phone number must be 10 digits.";
+    if (!firstName.trim() || !lastName.trim() || !phoneNumber.trim()) {
+      setError("First name, last name, and phone number are required.");
+      return false;
     }
-
-    if (showAddressFields) {
-      if (!formData.address_details.trim())
-        newErrors.address_details = "Address is required.";
-      if (!formData.city.trim()) newErrors.city = "City is required.";
-      if (!formData.state.trim()) newErrors.state = "State is required.";
-      if (!formData.pin_code.trim()) {
-        newErrors.pin_code = "Pin code is required.";
-      } else if (!/^\d{5,6}$/.test(formData.pin_code.trim())) {
-        newErrors.pin_code = "Pin code must be 5 or 6 digits.";
-      }
+    if (!/^\d{10}$/.test(phoneNumber.trim())) {
+      setError("Phone number must be 10 digits.");
+      return false;
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-    setSubmitError("");
-    setSubmitSuccess("");
+    if (
+      !addressDetails.trim() ||
+      !city.trim() ||
+      !state.trim() ||
+      !pinCode.trim()
+    ) {
+      setError("All address fields are required.");
+      return false;
+    }
+    if (!/^\d{5,6}$/.test(pinCode.trim())) {
+      setError("Pin Code must be 5 or 6 digits.");
+      return false;
+    }
+    setError("");
+    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -78,60 +61,24 @@ function CustomerForm({
     if (!validate()) return;
 
     setLoading(true);
-    setSubmitError("");
-    setSubmitSuccess("");
+    setError("");
 
     try {
-      const url = initialData?.id
-        ? `http://localhost:5000/api/customers/${initialData.id}`
-        : "http://localhost:5000/api/customers";
-
-      const method = initialData?.id ? "PUT" : "POST";
-
-      const payload = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
-        phone_number: formData.phone_number.trim(),
-      };
-
-      if (showAddressFields) {
-        payload.address_details = formData.address_details.trim();
-        payload.city = formData.city.trim();
-        payload.state = formData.state.trim();
-        payload.pin_code = formData.pin_code.trim();
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to submit form.");
-      }
-
-      if (!initialData?.id) {
-        setSubmitSuccess("Customer created successfully.");
-        setFormData({
-          first_name: "",
-          last_name: "",
-          phone_number: "",
-          address_details: "",
-          city: "",
-          state: "",
-          pin_code: "",
-        });
-        setTimeout(() => {
-          if (onSubmitSuccess) onSubmitSuccess();
-        }, 1500);
-      } else {
-        setSubmitSuccess("Customer updated successfully.");
-        if (onSubmitSuccess) onSubmitSuccess();
-      }
+      await onSubmit(
+        {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          phone_number: phoneNumber.trim(),
+        },
+        {
+          address_details: addressDetails.trim(),
+          city: city.trim(),
+          state: state.trim(),
+          pin_code: pinCode.trim(),
+        }
+      );
     } catch (err) {
-      setSubmitError(err.message);
+      setError(err.message || "Failed to submit");
     } finally {
       setLoading(false);
     }
@@ -141,105 +88,102 @@ function CustomerForm({
     <form
       onSubmit={handleSubmit}
       className="max-w-md mx-auto bg-white p-6 rounded shadow space-y-4"
-      noValidate
     >
-      {submitError && <p className="text-red-600">{submitError}</p>}
-      {submitSuccess && <p className="text-green-600">{submitSuccess}</p>}
+      <h2 className="text-xl font-semibold">Edit Customer & Primary Address</h2>
 
-      {[
-        { label: "First Name", name: "first_name", type: "text" },
-        { label: "Last Name", name: "last_name", type: "text" },
-        {
-          label: "Phone Number",
-          name: "phone_number",
-          type: "text",
-          placeholder: "10 digit number",
-        },
-      ].map(({ label, name, type, placeholder }) => (
-        <div key={name}>
-          <label className="block mb-1 font-medium" htmlFor={name}>
-            {label}
-          </label>
-          <input
-            id={name}
-            name={name}
-            type={type}
-            value={formData[name]}
-            onChange={handleChange}
-            placeholder={placeholder || ""}
-            className={`w-full p-2 border rounded ${
-              errors[name] ? "border-red-600" : "border-gray-300"
-            }`}
-            disabled={loading}
-          />
-          {errors[name] && (
-            <p className="text-red-600 text-sm">{errors[name]}</p>
-          )}
-        </div>
-      ))}
+      {error && <p className="text-red-600">{error}</p>}
 
-      {showAddressFields && (
-        <>
-          {[
-            { label: "Address Details", name: "address_details", type: "text" },
-            { label: "City", name: "city", type: "text" },
-            { label: "State", name: "state", type: "text" },
-            {
-              label: "Pin Code",
-              name: "pin_code",
-              type: "text",
-              placeholder: "5 or 6 digit code",
-            },
-          ].map(({ label, name, type, placeholder }) => (
-            <div key={name}>
-              <label className="block mb-1 font-medium" htmlFor={name}>
-                {label}
-              </label>
-              <input
-                id={name}
-                name={name}
-                type={type}
-                value={formData[name]}
-                onChange={handleChange}
-                placeholder={placeholder || ""}
-                className={`w-full p-2 border rounded ${
-                  errors[name] ? "border-red-600" : "border-gray-300"
-                }`}
-                disabled={loading}
-              />
-              {errors[name] && (
-                <p className="text-red-600 text-sm">{errors[name]}</p>
-              )}
-            </div>
-          ))}
-        </>
-      )}
-
-      <div className="flex space-x-4">
-        <button
-          type="submit"
+      <div>
+        <label className="block mb-1 font-medium">First Name</label>
+        <input
+          type="text"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          className="w-full p-2 border rounded"
           disabled={loading}
-          className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading
-            ? initialData?.id
-              ? "Updating..."
-              : "Creating..."
-            : initialData?.id
-            ? "Update Customer"
-            : "Create Customer"}
-        </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={loading}
-            className="flex-1 bg-gray-400 text-white py-2 rounded hover:bg-gray-500 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-        )}
+        />
       </div>
+
+      <div>
+        <label className="block mb-1 font-medium">Last Name</label>
+        <input
+          type="text"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          className="w-full p-2 border rounded"
+          disabled={loading}
+        />
+      </div>
+
+      <div>
+        <label className="block mb-1 font-medium">Phone Number</label>
+        <input
+          type="text"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          className="w-full p-2 border rounded"
+          disabled={loading}
+          placeholder="10 digit phone number"
+        />
+      </div>
+
+      <h3 className="text-lg font-semibold mt-4">Primary Address</h3>
+
+      <div>
+        <label className="block mb-1 font-medium">Address Details</label>
+        <input
+          type="text"
+          value={addressDetails}
+          onChange={(e) => setAddressDetails(e.target.value)}
+          className="w-full p-2 border rounded"
+          disabled={loading}
+          placeholder="Street, building, etc."
+        />
+      </div>
+
+      <div>
+        <label className="block mb-1 font-medium">City</label>
+        <input
+          type="text"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="w-full p-2 border rounded"
+          disabled={loading}
+          placeholder="City"
+        />
+      </div>
+
+      <div>
+        <label className="block mb-1 font-medium">State</label>
+        <input
+          type="text"
+          value={state}
+          onChange={(e) => setState(e.target.value)}
+          className="w-full p-2 border rounded"
+          disabled={loading}
+          placeholder="State"
+        />
+      </div>
+
+      <div>
+        <label className="block mb-1 font-medium">Pin Code</label>
+        <input
+          type="text"
+          value={pinCode}
+          onChange={(e) => setPinCode(e.target.value)}
+          className="w-full p-2 border rounded"
+          disabled={loading}
+          placeholder="Postal/ZIP code"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+      >
+        {loading ? "Saving..." : "Save Customer & Address"}
+      </button>
     </form>
   );
 }
